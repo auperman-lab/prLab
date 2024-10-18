@@ -2,7 +2,7 @@ from lab1.src.consts import base_url
 from lab1.src.model.products_price_range import ProductsPriceRange
 from lab1.src.parser import parse_products
 from lab1.src.scraper import http_scraper, tcp_scraper
-from lab1.src.serialize import serialize_json, serialize_xml
+from lab1.src.serialize import serialize_json, serialize_xml, serialize_sql
 from lab1.src.value_converter import convert_price
 
 
@@ -53,8 +53,17 @@ def main():
         }
     ]
 
+    product_info = {
+            "name": "Original Sheep Cheese",
+            "price_old": "56.70/0.3kg",
+            "price_new": "",
+            "discount": "",
+            "category": "Dairy Products",
+            "sub_category": "Sheep Cheese",
+            "link": "/ro/catalog/branza_proaspata/original_sheep_braza_sarata_de_oi__kg"
+    }
 
-    print(serialize_xml( "product", products_info))
+    print(serialize_sql( "product", products_info))
 
 
 
