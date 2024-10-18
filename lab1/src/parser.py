@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from lab1.src.consts import base_url
 from lab1.src.model.product import Product
-from lab1.src.scraper import html_scraper
+from lab1.src.scraper import http_scraper, tcp_scraper
 
 
 def parse_products(html_content):
@@ -16,7 +16,8 @@ def parse_products(html_content):
         p_link = name_div.find("a", {"class": "products-catalog-content__name"})
         p_link = p_link["href"]
 
-        product_html = html_scraper(base_url + p_link)
+        # product_html = http_scraper("https://" + base_url + p_link)
+        product_html = tcp_scraper(p_link)
         p_category, p_subcategory = parse_categories(product_html)
 
 
