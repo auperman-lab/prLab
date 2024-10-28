@@ -1,0 +1,47 @@
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "2003:2003"
+    volumes:
+      - app-static:/app/static
+
+  postgres-db:
+    container_name: postgres-db
+    image: postgres:17.0-alpine3.20
+    environment:
+      - POSTGRES_USER=market
+      - POSTGRES_PASSWORD=linella
+      - POSTGRES_DB=dbLinella
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d dbLinella -U market" ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  app-static:
+    driver: local
+  postgres-db-data:
+    driver: local

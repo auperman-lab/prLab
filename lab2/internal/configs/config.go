@@ -4,6 +4,7 @@ import (
 	"github.com/joho/godotenv"
 	"log/slog"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -11,7 +12,8 @@ type Config struct {
 	Port       string `env:"PORT"`
 	DBUser     string `env:"DB_USER"`
 	DBPassword string `env:"DB_PASSWORD"`
-	DBAddress  string `env:"DB_ADDRESS"`
+	DBHost     string `env:"DB_HOST"`
+	DBPort     int    `env:"DB_PORT"`
 	DBName     string `env:"DB_NAME"`
 }
 
@@ -31,11 +33,33 @@ func initConfig() *Config {
 	}
 
 	return &Config{
-		PublicHost: os.Getenv("PUBLIC_HOST"),
-		Port:       os.Getenv("PORT"),
-		DBUser:     os.Getenv("DB_USER"),
-		DBPassword: os.Getenv("DB_PASSWORD"),
-		DBAddress:  os.Getenv("DB_ADDRESS"),
-		DBName:     os.Getenv("DB_NAME"),
+		PublicHost: getEnv("PUBLIC_HOST", "http://localhost"),
+		Port:       getEnv("PORT", "2003"),
+		DBUser:     getEnv("DB_USER", "market"),
+		DBPassword: getEnv("DB_PASSWORD", "linella"),
+		DBPort:     getEnvAsInt("DB_PORT", 5432),
+		DBName:     getEnv("DB_NAME", "dbLinella"),
+		DBHost:     getEnv("DB_HOST", "postgres-db"),
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+
+	return fallback
+}
+
+func getEnvAsInt(key string, fallback int) int {
+	if value, ok := os.LookupEnv(key); ok {
+		i, err := strconv.Atoi(value)
+		if err != nil {
+			return fallback
+		}
+
+		return i
+	}
+
+	return fallback
 }
