@@ -9,7 +9,7 @@ import (
 
 type IProductRepository interface {
 	CreateProduct(ctx context.Context, product *models.Product) error
-	GetProductByID(ctx context.Context, id uint) (*models.Product, error)
+	GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error)
 	GetProductByName(ctx context.Context, name string) (*models.Product, error)
 	UpdateProduct(ctx context.Context, product *models.Product) error
 	DeleteProductByID(ctx context.Context, id uint) error
@@ -30,7 +30,7 @@ func (svc *ProductService) CreateProduct(ctx context.Context, product *models.Pr
 	slog.Info("Creating product...", "name", product.Name)
 	return svc.productRepository.CreateProduct(ctx, product)
 }
-func (svc *ProductService) GetProductByID(ctx context.Context, id uint) (*models.Product, error) {
+func (svc *ProductService) GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error) {
 	slog.Info("Getting product...", "id", id)
 	return svc.productRepository.GetProductByID(ctx, id)
 }

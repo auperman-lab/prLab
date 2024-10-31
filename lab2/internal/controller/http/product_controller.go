@@ -16,7 +16,7 @@ import (
 
 type IProductService interface {
 	CreateProduct(ctx context.Context, product *models.Product) error
-	GetProductByID(ctx context.Context, id uint) (*models.Product, error)
+	GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error)
 	GetProductByName(ctx context.Context, name string) (*models.Product, error)
 	UpdateProduct(ctx context.Context, product *models.Product) error
 	DeleteProductByID(ctx context.Context, id uint) error

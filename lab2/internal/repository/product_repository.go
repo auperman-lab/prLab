@@ -27,23 +27,91 @@ func (repo *ProductRepository) CreateProduct(ctx context.Context, product *model
 	}
 	return nil
 }
-func (repo *ProductRepository) GetProductByID(ctx context.Context, id uint) (*models.Product, error) {
-	var product = &models.Product{}
+func (repo *ProductRepository) GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error) {
+	var product models.Product
 	err := repo.db.WithContext(ctx).Where("id=?", id).First(&product).Error
 	if err != nil {
 		slog.Error("Failed to find product by id", "error", err.Error())
 		return nil, err
 	}
-	return product, nil
+
+	returnProduct := &models.ReturnProduct{
+		ID:               product.ID,
+		Name:             product.Name,
+		Price:            product.Price,
+		PriceOld:         product.PriceOld,
+		Discount:         product.Discount,
+		Available:        product.Available,
+		Link:             product.Link,
+		ImageID:          product.ImageID,
+		SpecialCondition: product.SpecialCondition,
+	}
+
+	var distributor models.Distributor
+	if err := repo.db.WithContext(ctx).Where("id=?", product.DistributorID).First(&distributor).Error; err == nil {
+		returnProduct.Distributor = distributor.Name
+	}
+
+	subCategory, err := repo.GetSubCategoryByID(ctx, product.SubCategoryID)
+	if err == nil {
+		returnProduct.SubCategory = subCategory.Name
+	}
+
+	category, err := repo.GetCategoryByID(ctx, subCategory.CategoryID)
+	if err == nil {
+		returnProduct.Category = category.Name
+	}
+	var discountPeriod models.DiscountPeriod
+	if err := repo.db.WithContext(ctx).Where("id=?", product.DiscountPeriodID).First(&discountPeriod).Error; err == nil {
+		returnProduct.DiscountPeriodStart = discountPeriod.StartDate
+		returnProduct.DiscountPeriodEnd = discountPeriod.EndDate
+	}
+
+	return returnProduct, nil
 }
-func (repo *ProductRepository) GetProductByName(ctx context.Context, name string) (*models.Product, error) {
+
+func (repo *ProductRepository) GetProductByName(ctx context.Context, name string) (*models.ReturnProduct, error) {
 	var product = &models.Product{}
 	err := repo.db.WithContext(ctx).Where("name=?", name).First(&product).Error
 	if err != nil {
 		slog.Error("Failed to find product by name", "error", err.Error())
 		return nil, err
 	}
-	return product, nil
+
+	returnProduct := &models.ReturnProduct{
+		ID:               product.ID,
+		Name:             product.Name,
+		Price:            product.Price,
+		PriceOld:         product.PriceOld,
+		Discount:         product.Discount,
+		Available:        product.Available,
+		Link:             product.Link,
+		ImageID:          product.ImageID,
+		SpecialCondition: product.SpecialCondition,
+	}
+
+	var distributor models.Distributor
+	if err := repo.db.WithContext(ctx).Where("id=?", product.DistributorID).First(&distributor).Error; err == nil {
+		returnProduct.Distributor = distributor.Name
+	}
+
+	subCategory, err := repo.GetSubCategoryByID(ctx, product.SubCategoryID)
+	if err == nil {
+		returnProduct.SubCategory = subCategory.Name
+	}
+
+	category, err := repo.GetCategoryByID(ctx, subCategory.CategoryID)
+	if err == nil {
+		returnProduct.Category = category.Name
+	}
+
+	var discountPeriod models.DiscountPeriod
+	if err := repo.db.WithContext(ctx).Where("id=?", product.DiscountPeriodID).First(&discountPeriod).Error; err == nil {
+		returnProduct.DiscountPeriodStart = discountPeriod.StartDate
+		returnProduct.DiscountPeriodEnd = discountPeriod.EndDate
+	}
+
+	return returnProduct, nil
 }
 func (repo *ProductRepository) UpdateProduct(ctx context.Context, product *models.Product) error {
 	var existingProduct = &models.Product{}
@@ -78,7 +146,7 @@ func (repo *ProductRepository) UpdateProduct(ctx context.Context, product *model
 		slog.Info("Updating product", "link", product.Link)
 		existingProduct.Link = product.Link
 	}
-	if product.ImageID != nil {
+	if product.ImageID != nil && *product.ImageID != 0 {
 		slog.Info("Updating product", "image", product.ImageID)
 		existingProduct.ImageID = product.ImageID
 	}
@@ -86,7 +154,7 @@ func (repo *ProductRepository) UpdateProduct(ctx context.Context, product *model
 		slog.Info("Updating product", "specialCondition", product.SpecialCondition)
 		existingProduct.SpecialCondition = product.SpecialCondition
 	}
-	if product.DiscountPeriodID != nil {
+	if product.DiscountPeriodID != nil && *product.DiscountPeriodID != 0 {
 		slog.Info("Updating product", "discountPeriodId", product.DiscountPeriodID)
 		existingProduct.DiscountPeriodID = product.DiscountPeriodID
 	}
@@ -120,12 +188,6 @@ func (repo *ProductRepository) GetAllProducts(ctx context.Context, pag utils.Pag
 	return products, nil
 }
 func (repo *ProductRepository) UpdateProductImage(ctx context.Context, img []byte, id uint) error {
-	var existingProduct = &models.Product{}
-
-	if err := repo.db.WithContext(ctx).Where("id=?", id).First(&existingProduct).Error; err != nil {
-		slog.Error("Failed to find petition to update", "error", err.Error())
-		return err
-	}
 
 	newImage := models.Image{Image: img}
 	if err := repo.db.WithContext(ctx).Model(&models.Image{}).Create(&newImage).Error; err != nil {
@@ -133,12 +195,31 @@ func (repo *ProductRepository) UpdateProductImage(ctx context.Context, img []byt
 		return err
 	}
 
-	existingProduct.ImageID = &newImage.ID
+	var product = &models.Product{}
+	product.ID = id
+	product.ImageID = &newImage.ID
 
-	if err := repo.db.WithContext(ctx).Save(&existingProduct).Error; err != nil {
-		slog.Error("Failed to update product image", "error", err.Error())
+	err := repo.UpdateProduct(ctx, product)
+	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (repo *ProductRepository) GetCategoryByID(ctx context.Context, id uint) (*models.Category, error) {
+	var category = &models.Category{}
+	if err := repo.db.WithContext(ctx).Where("id=?", id).First(&category).Error; err != nil {
+		slog.Error("Failed to find category", "error", err.Error())
+		return nil, err
+	}
+	return category, nil
+}
+func (repo *ProductRepository) GetSubCategoryByID(ctx context.Context, id uint) (*models.SubCategory, error) {
+	var subCategory = &models.SubCategory{}
+	if err := repo.db.WithContext(ctx).Where("id=?", id).First(&subCategory).Error; err != nil {
+		slog.Error("Failed to find subcategory", "error", err.Error())
+		return nil, err
+	}
+	return subCategory, nil
 }

@@ -11,6 +11,12 @@ type SubCategory struct {
 	CategoryID uint   `gorm:"foreignKey:CategoryID" json:"category_id"`
 }
 
+type ReturnSubCategory struct {
+	ID       uint     `json:"id"`
+	Name     string   `json:"name"`
+	Category Category `json:"category_id"`
+}
+
 var CategorySeedData = []Category{
 	{ID: 1, Name: "Cărți"},
 	{ID: 2, Name: "Cadouri. Totul pentru sarbatori"},
