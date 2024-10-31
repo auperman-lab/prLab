@@ -1,6 +1,3 @@
-from operator import truediv
-
-
 def serialize_json(data, json_str="", modificator=""):
     if isinstance(data, dict):
         json_str = f"{modificator}{{\n"

@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from lab1.src.consts import base_url
 from lab1.src.model.product import Product
 from lab1.src.scraper import http_scraper, tcp_scraper
 
@@ -48,7 +47,6 @@ def parse_products(html_content):
 
     return products
 
-
 def parse_categories(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     product_breadcrumbs = [i.get_text(strip=True) for i in soup.find("ul", {"class": "breadcrumbs"}).find_all("li")]
@@ -56,3 +54,22 @@ def parse_categories(html_content):
     p_category = product_breadcrumbs[2]
     p_subcategory = product_breadcrumbs[3]
     return p_category, p_subcategory
+
+def parse_all_categories(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    category_div = soup.find("div", {"class": "catalog__lft"})
+    category_list = {}
+    for li in  category_div.find("ul").select("li"):
+        if not li.find_parent("ul", {"class":"level2"}):
+            span = li.find("span")
+            if span is not None:
+                category_list[span.get_text(strip=True)] = list()
+            else:
+                category_list[li.find("a").get_text(strip=True)] = list()
+        else:
+            category_list[list(category_list.keys())[-1]].append(li.find("a").get_text(strip=True))
+
+    for category in category_list.keys():
+        print(category, category_list[category])
+    return
+

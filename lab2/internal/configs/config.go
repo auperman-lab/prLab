@@ -2,6 +2,7 @@ package configs
 
 import (
 	"github.com/joho/godotenv"
+	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -23,12 +24,14 @@ func initConfig() *Config {
 
 	if _, err := os.Stat(".env"); os.IsNotExist(err) {
 		slog.Warn("No .env file found; using environment variables set in the system")
+		log.Fatal()
 	} else if err != nil {
 		slog.Error("Error checking .env file %s", err)
 		return nil
 	}
 	if err := godotenv.Load(); err != nil {
 		slog.Error("Error loading .env file", "error", err)
+		log.Fatal()
 		return nil
 	}
 
