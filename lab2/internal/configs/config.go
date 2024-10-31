@@ -13,7 +13,7 @@ type Config struct {
 	DBUser     string `env:"DB_USER"`
 	DBPassword string `env:"DB_PASSWORD"`
 	DBHost     string `env:"DB_HOST"`
-	DBPort     int    `env:"DB_PORT"`
+	DBPort     uint16 `env:"DB_PORT"`
 	DBName     string `env:"DB_NAME"`
 }
 
@@ -37,7 +37,7 @@ func initConfig() *Config {
 		Port:       getEnv("PORT", "2003"),
 		DBUser:     getEnv("DB_USER", "market"),
 		DBPassword: getEnv("DB_PASSWORD", "linella"),
-		DBPort:     getEnvAsInt("DB_PORT", 5432),
+		DBPort:     getEnvAsUint("DB_PORT", 5432),
 		DBName:     getEnv("DB_NAME", "dbLinella"),
 		DBHost:     getEnv("DB_HOST", "postgres-db"),
 	}
@@ -51,14 +51,14 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-func getEnvAsInt(key string, fallback int) int {
+func getEnvAsUint(key string, fallback uint16) uint16 {
 	if value, ok := os.LookupEnv(key); ok {
-		i, err := strconv.Atoi(value)
+		i, err := strconv.ParseUint(value, 10, 16)
 		if err != nil {
 			return fallback
 		}
 
-		return i
+		return uint16(i)
 	}
 
 	return fallback

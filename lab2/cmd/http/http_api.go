@@ -1,6 +1,9 @@
-package cmd
+package http
 
 import (
+	ctrl "github.com/auperman-lab/lab2/internal/controller/http"
+	repo "github.com/auperman-lab/lab2/internal/repository"
+	svc "github.com/auperman-lab/lab2/internal/service"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 	"log/slog"
@@ -21,7 +24,10 @@ func NewAPIServer(addr string, db *gorm.DB) *APIServer {
 
 func (s *APIServer) Run() error {
 	router := mux.NewRouter()
-	//subrouter := router.PathPrefix("/api/v1").Subrouter()
+	productRepo := repo.NewProductRepository(s.db)
+	productSvc := svc.NewProductService(productRepo)
+	productCtrl := ctrl.NewProductController(productSvc)
+	RegisterRoutes(router, productCtrl)
 
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 

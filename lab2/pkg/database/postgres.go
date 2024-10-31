@@ -11,7 +11,12 @@ import (
 
 func LoadDatabase() *gorm.DB {
 	db := connect()
-	err := db.AutoMigrate(&models.Product{})
+	err := db.AutoMigrate(
+		&models.Product{},
+		&models.Category{},
+		&models.SubCategory{},
+		&models.DiscountPeriod{},
+		&models.Distributor{})
 	if err != nil {
 		slog.Error("failed migrating database", "error", err)
 	}
