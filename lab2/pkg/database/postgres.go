@@ -16,7 +16,8 @@ func LoadDatabase() *gorm.DB {
 		&models.Category{},
 		&models.SubCategory{},
 		&models.DiscountPeriod{},
-		&models.Distributor{})
+		&models.Distributor{},
+		&models.Image{})
 	if err != nil {
 		slog.Error("failed migrating database", "error", err)
 	}

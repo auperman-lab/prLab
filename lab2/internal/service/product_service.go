@@ -14,6 +14,7 @@ type IProductRepository interface {
 	UpdateProduct(ctx context.Context, product *models.Product) error
 	DeleteProductByID(ctx context.Context, id uint) error
 	GetAllProducts(ctx context.Context, pag utils.Pagination) ([]models.Product, error)
+	UpdateProductImage(ctx context.Context, img []byte, id uint) error
 }
 
 type ProductService struct {
@@ -48,4 +49,8 @@ func (svc *ProductService) DeleteProductByID(ctx context.Context, id uint) error
 func (svc *ProductService) GetAllProducts(ctx context.Context, pag utils.Pagination) ([]models.Product, error) {
 	slog.Info("Getting all products...")
 	return svc.productRepository.GetAllProducts(ctx, pag)
+}
+func (svc *ProductService) UpdateProductImage(ctx context.Context, img []byte, id uint) error {
+	slog.Info("Updating product image...", "id", id)
+	return svc.productRepository.UpdateProductImage(ctx, img, id)
 }

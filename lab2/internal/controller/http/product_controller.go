@@ -8,6 +8,7 @@ import (
 	"github.com/auperman-lab/lab2/internal/utils"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -20,6 +21,7 @@ type IProductService interface {
 	UpdateProduct(ctx context.Context, product *models.Product) error
 	DeleteProductByID(ctx context.Context, id uint) error
 	GetAllProducts(ctx context.Context, pag utils.Pagination) ([]models.Product, error)
+	UpdateProductImage(ctx context.Context, img []byte, id uint) error
 }
 
 type ProductController struct {
@@ -177,4 +179,45 @@ func (ctrl *ProductController) GetAllProducts(w http.ResponseWriter, r *http.Req
 	}
 
 	utils.WriteJSON(w, http.StatusOK, product)
+}
+func (ctrl *ProductController) UpdateProductImage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr, ok := vars["id"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, errors.New("missing id"))
+	}
+	id, err := strconv.ParseUint(idStr, 10, 32) // Parsing as uint32 for GORM
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, errors.New("invalid id"))
+		return
+	}
+	fmt.Println(id)
+
+	if err := r.ParseMultipartForm(1 << 20); err != nil {
+		slog.Error("Failed to parse multipart form", "error", err)
+		http.Error(w, "Failed to parse multipart form", http.StatusBadRequest)
+		return
+	}
+
+	file, _, err := r.FormFile("image")
+	if err != nil {
+		slog.Error("Failed to get file from form data", "error", err)
+		http.Error(w, "Failed to get file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	imageData, err := io.ReadAll(file)
+	if err != nil {
+		slog.Error("Failed to read file data", "error", err)
+		http.Error(w, "Failed to read file data", http.StatusInternalServerError)
+		return
+	}
+	ctx := r.Context()
+	if err := ctrl.productService.UpdateProductImage(ctx, imageData, uint(id)); err != nil {
+		slog.Error("Failed to update product image", "error", err)
+		http.Error(w, "Failed to update product image", http.StatusInternalServerError)
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "Image uploaded successfully", "product_id": idStr})
 }

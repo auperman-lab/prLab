@@ -13,7 +13,7 @@ type Product struct {
 	Available        *bool   `gorm:"default:true" json:"available"`
 	SubCategoryID    uint    `gorm:"foreignKey:SubCategoryID" json:"sub_category_id"`
 	Link             string  `gorm:"type:varchar" json:"link"`
-	Image            *[]byte `gorm:"type:bytea" json:"image"`
+	ImageID          *uint   `gorm:"foreignKey:ImageId" json:"image_id"`
 	SpecialCondition string  `gorm:"type:varchar;default:''" json:"special_condition"`
 }
 
@@ -37,4 +37,9 @@ type DiscountPeriod struct {
 type Distributor struct {
 	ID   uint   `gorm:"primaryKey" json:"id"`
 	Name string `gorm:"type:varchar" json:"name"`
+}
+
+type Image struct {
+	ID    uint   `gorm:"primaryKey" json:"id"`
+	Image []byte `gorm:"type:bytea" json:"image"`
 }

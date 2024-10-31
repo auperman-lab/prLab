@@ -16,6 +16,7 @@ func RegisterRoutes(r *mux.Router, productCtrl *ctrl.ProductController) {
 	productsRouter.HandleFunc("", productCtrl.UpdateProduct).Methods(http.MethodPut)
 	productsRouter.HandleFunc("/{id:[0-9]+}", productCtrl.DeleteProductByID).Methods(http.MethodDelete)
 	productsRouter.HandleFunc("/{page:[0-9]+}/{limit:[0-9]+}", productCtrl.GetAllProducts).Methods(http.MethodGet)
+	productsRouter.HandleFunc("/{id:[0-9]+}/upload", productCtrl.UpdateProductImage).Methods(http.MethodPut)
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("\nHello, This is an api that presents linella products !\n"))

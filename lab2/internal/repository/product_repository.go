@@ -78,9 +78,9 @@ func (repo *ProductRepository) UpdateProduct(ctx context.Context, product *model
 		slog.Info("Updating product", "link", product.Link)
 		existingProduct.Link = product.Link
 	}
-	if product.Image != nil {
-		slog.Info("Updating product", "image", product.Image)
-		existingProduct.Image = product.Image
+	if product.ImageID != nil {
+		slog.Info("Updating product", "image", product.ImageID)
+		existingProduct.ImageID = product.ImageID
 	}
 	if product.SpecialCondition != "" {
 		slog.Info("Updating product", "specialCondition", product.SpecialCondition)
@@ -118,4 +118,27 @@ func (repo *ProductRepository) GetAllProducts(ctx context.Context, pag utils.Pag
 		return nil, err
 	}
 	return products, nil
+}
+func (repo *ProductRepository) UpdateProductImage(ctx context.Context, img []byte, id uint) error {
+	var existingProduct = &models.Product{}
+
+	if err := repo.db.WithContext(ctx).Where("id=?", id).First(&existingProduct).Error; err != nil {
+		slog.Error("Failed to find petition to update", "error", err.Error())
+		return err
+	}
+
+	newImage := models.Image{Image: img}
+	if err := repo.db.WithContext(ctx).Model(&models.Image{}).Create(&newImage).Error; err != nil {
+		slog.Error("Failed to update product", "error", err.Error())
+		return err
+	}
+
+	existingProduct.ImageID = &newImage.ID
+
+	if err := repo.db.WithContext(ctx).Save(&existingProduct).Error; err != nil {
+		slog.Error("Failed to update product image", "error", err.Error())
+		return err
+	}
+
+	return nil
 }
