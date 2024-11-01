@@ -9,8 +9,8 @@ import (
 
 type IProductRepository interface {
 	CreateProduct(ctx context.Context, product *models.Product) error
-	GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error)
-	GetProductByName(ctx context.Context, name string) (*models.Product, error)
+	GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, *models.Image, error)
+	GetProductByName(ctx context.Context, name string) (*models.ReturnProduct, error)
 	UpdateProduct(ctx context.Context, product *models.Product) error
 	DeleteProductByID(ctx context.Context, id uint) error
 	GetAllProducts(ctx context.Context, pag utils.Pagination) ([]models.Product, error)
@@ -30,11 +30,11 @@ func (svc *ProductService) CreateProduct(ctx context.Context, product *models.Pr
 	slog.Info("Creating product...", "name", product.Name)
 	return svc.productRepository.CreateProduct(ctx, product)
 }
-func (svc *ProductService) GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error) {
+func (svc *ProductService) GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, *models.Image, error) {
 	slog.Info("Getting product...", "id", id)
 	return svc.productRepository.GetProductByID(ctx, id)
 }
-func (svc *ProductService) GetProductByName(ctx context.Context, name string) (*models.Product, error) {
+func (svc *ProductService) GetProductByName(ctx context.Context, name string) (*models.ReturnProduct, error) {
 	slog.Info("Getting product...", "name", name)
 	return svc.productRepository.GetProductByName(ctx, name)
 }

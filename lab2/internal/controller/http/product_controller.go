@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/auperman-lab/lab2/internal/models"
@@ -10,14 +11,16 @@ import (
 	"gorm.io/gorm"
 	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"strconv"
 )
 
 type IProductService interface {
 	CreateProduct(ctx context.Context, product *models.Product) error
-	GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error)
-	GetProductByName(ctx context.Context, name string) (*models.Product, error)
+	GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, *models.Image, error)
+	GetProductByName(ctx context.Context, name string) (*models.ReturnProduct, error)
 	UpdateProduct(ctx context.Context, product *models.Product) error
 	DeleteProductByID(ctx context.Context, id uint) error
 	GetAllProducts(ctx context.Context, pag utils.Pagination) ([]models.Product, error)
@@ -66,7 +69,7 @@ func (ctrl *ProductController) GetProductByID(w http.ResponseWriter, r *http.Req
 	}
 
 	ctx := r.Context()
-	product, err := ctrl.productService.GetProductByID(ctx, uint(id))
+	product, img, err := ctrl.productService.GetProductByID(ctx, uint(id))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			utils.WriteError(w, http.StatusNotFound, errors.New("product not found"))
@@ -76,7 +79,50 @@ func (ctrl *ProductController) GetProductByID(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, product)
+	//----------------------------------------------------
+
+	mw := multipart.NewWriter(w)
+	w.Header().Set("Content-Type", mw.FormDataContentType())
+	defer mw.Close()
+
+	productJSON, err := json.Marshal(product)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, errors.New("failed to marshal product data"))
+		return
+	}
+
+	partJSON, err := mw.CreatePart(textproto.MIMEHeader{
+		"Content-Disposition": []string{`form-data; name="product_data"`},
+		"Content-Type":        []string{"application/json"},
+	})
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, errors.New("failed to create JSON part"))
+		return
+	}
+	_, err = partJSON.Write(productJSON)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, errors.New("failed to write JSON part"))
+		return
+	}
+
+	if img != nil {
+		partImage, err := mw.CreatePart(textproto.MIMEHeader{
+			"Content-Disposition": []string{`form-data; name="image"; filename="product_image.png"`},
+			"Content-Type":        []string{"image/png"},
+		})
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, errors.New("failed to create image part"))
+			return
+		}
+		_, err = partImage.Write(img.Image)
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, errors.New("failed to write image part"))
+			return
+		}
+	}
+
+	mw.Close()
+
 }
 func (ctrl *ProductController) GetProductByName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

@@ -27,12 +27,12 @@ func (repo *ProductRepository) CreateProduct(ctx context.Context, product *model
 	}
 	return nil
 }
-func (repo *ProductRepository) GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, error) {
+func (repo *ProductRepository) GetProductByID(ctx context.Context, id uint) (*models.ReturnProduct, *models.Image, error) {
 	var product models.Product
 	err := repo.db.WithContext(ctx).Where("id=?", id).First(&product).Error
 	if err != nil {
 		slog.Error("Failed to find product by id", "error", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	returnProduct := &models.ReturnProduct{
@@ -43,7 +43,6 @@ func (repo *ProductRepository) GetProductByID(ctx context.Context, id uint) (*mo
 		Discount:         product.Discount,
 		Available:        product.Available,
 		Link:             product.Link,
-		ImageID:          product.ImageID,
 		SpecialCondition: product.SpecialCondition,
 	}
 
@@ -61,15 +60,20 @@ func (repo *ProductRepository) GetProductByID(ctx context.Context, id uint) (*mo
 	if err == nil {
 		returnProduct.Category = category.Name
 	}
+
 	var discountPeriod models.DiscountPeriod
 	if err := repo.db.WithContext(ctx).Where("id=?", product.DiscountPeriodID).First(&discountPeriod).Error; err == nil {
 		returnProduct.DiscountPeriodStart = discountPeriod.StartDate
 		returnProduct.DiscountPeriodEnd = discountPeriod.EndDate
 	}
 
-	return returnProduct, nil
-}
+	img, err := repo.GetImageByID(ctx, *product.ImageID)
+	if err != nil {
+		slog.Error("Failed to find image by id", "error", err.Error())
+	}
 
+	return returnProduct, img, nil
+}
 func (repo *ProductRepository) GetProductByName(ctx context.Context, name string) (*models.ReturnProduct, error) {
 	var product = &models.Product{}
 	err := repo.db.WithContext(ctx).Where("name=?", name).First(&product).Error
@@ -86,7 +90,6 @@ func (repo *ProductRepository) GetProductByName(ctx context.Context, name string
 		Discount:         product.Discount,
 		Available:        product.Available,
 		Link:             product.Link,
-		ImageID:          product.ImageID,
 		SpecialCondition: product.SpecialCondition,
 	}
 
@@ -222,4 +225,13 @@ func (repo *ProductRepository) GetSubCategoryByID(ctx context.Context, id uint) 
 		return nil, err
 	}
 	return subCategory, nil
+}
+func (repo *ProductRepository) GetImageByID(ctx context.Context, id uint) (*models.Image, error) {
+	var img = &models.Image{}
+	if err := repo.db.WithContext(ctx).Where("id=?", id).First(&img).Error; err != nil {
+		slog.Error("Failed to find image", "error", err.Error())
+		return nil, err
+	}
+	return img, nil
+
 }

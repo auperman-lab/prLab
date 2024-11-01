@@ -41,6 +41,5 @@ type ReturnProduct struct {
 	Category            string    `json:"category"`
 	SubCategory         string    `json:"sub_category"`
 	Link                string    `json:"link"`
-	ImageID             *uint     `json:"image_id"`
 	SpecialCondition    string    `json:"special_condition"`
 }
