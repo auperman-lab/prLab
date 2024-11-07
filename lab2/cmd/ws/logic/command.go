@@ -81,9 +81,13 @@ func (s *Server) msg(c *Client, args []string) {
 func (s *Server) quit(c *Client) {
 	log.Printf("client has left the chat: %s", c.conn.RemoteAddr().String())
 
-	s.quitCurrentRoom(c)
+	if c.room != nil {
+		c.msg(fmt.Sprintf("room %s will remember you", c.room.name))
 
-	c.msg("sad to see you go =(")
+		s.quitCurrentRoom(c)
+		return
+	}
+	c.msg("sad to see you quit :^(")
 	c.conn.Close()
 }
 

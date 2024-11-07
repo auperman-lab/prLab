@@ -2,7 +2,6 @@ package logic
 
 import (
 	"log"
-	"log/slog"
 	"net"
 )
 
@@ -20,7 +19,6 @@ func NewServer() *Server {
 
 func (s *Server) Run() {
 	for cmd := range s.commands {
-		slog.Info("user message %s\n", cmd)
 
 		switch cmd.id {
 		case CMD_NICK:

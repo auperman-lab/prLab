@@ -16,18 +16,27 @@ type Client struct {
 }
 
 func (c *Client) ReadInput() {
+	c.msg("\n\n" +
+		"/nick [name] - set up your nickname\n" +
+		"/join [room_name] - join a room\n" +
+		"/rooms - list all rooms\n" +
+		"/msg [message] - write a message\n" +
+		"/q - quit the server" +
+		"\n\n")
+
 	for {
 		msg, err := bufio.NewReader(c.conn).ReadString('\n')
 		if err != nil {
 			slog.Error("error reading data", "error", err)
 			return
 		}
-		slog.Info("user message %s\n", msg)
 
 		msg = strings.Trim(msg, "\r\n")
 
 		args := strings.Split(msg, " ")
 		cmd := strings.TrimSpace(args[0])
+
+		slog.Info("user message \n", "message", args)
 
 		switch cmd {
 		case "/nick":
@@ -53,7 +62,7 @@ func (c *Client) ReadInput() {
 				client: c,
 				args:   args,
 			}
-		case "/quit":
+		case "/q":
 			c.commands <- command{
 				id:     CMD_QUIT,
 				client: c,
@@ -61,6 +70,7 @@ func (c *Client) ReadInput() {
 		default:
 			c.err(fmt.Errorf("unknown command: %s", cmd))
 		}
+
 	}
 }
 
