@@ -21,6 +21,7 @@ func (c *Client) ReadInput() {
 		"/join [room_name] - join a room\n" +
 		"/rooms - list all rooms\n" +
 		"/msg [message] - write a message\n" +
+		"/read - read chat history\n" +
 		"/q - quit the server" +
 		"\n\n")
 
@@ -35,8 +36,6 @@ func (c *Client) ReadInput() {
 
 		args := strings.Split(msg, " ")
 		cmd := strings.TrimSpace(args[0])
-
-		slog.Info("user message \n", "message", args)
 
 		switch cmd {
 		case "/nick":
@@ -59,6 +58,12 @@ func (c *Client) ReadInput() {
 		case "/msg":
 			c.commands <- command{
 				id:     CMD_MSG,
+				client: c,
+				args:   args,
+			}
+		case "/read":
+			c.commands <- command{
+				id:     CMD_READ,
 				client: c,
 				args:   args,
 			}

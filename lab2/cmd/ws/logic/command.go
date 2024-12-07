@@ -3,7 +3,7 @@ package logic
 import (
 	"fmt"
 	"log"
-	"net"
+	"log/slog"
 	"strings"
 )
 
@@ -15,6 +15,7 @@ const (
 	CMD_ROOMS
 	CMD_MSG
 	CMD_QUIT
+	CMD_READ
 )
 
 type command struct {
@@ -43,11 +44,13 @@ func (s *Server) join(c *Client, args []string) {
 
 	r, ok := s.rooms[roomName]
 	if !ok {
-		r = &Room{
-			name:    roomName,
-			members: make(map[net.Addr]*Client),
+		err, room := NewRoom(roomName)
+		if err != nil {
+			c.msg("failed to create a room")
+			return
 		}
-		s.rooms[roomName] = r
+		s.rooms[roomName] = room
+		r = room
 	}
 	r.members[c.conn.RemoteAddr()] = c
 
@@ -57,6 +60,7 @@ func (s *Server) join(c *Client, args []string) {
 	r.Broadcast(c, fmt.Sprintf("%s joined the room", c.nick))
 
 	c.msg(fmt.Sprintf("welcome to %s", roomName))
+
 }
 
 func (s *Server) listRooms(c *Client) {
@@ -65,7 +69,7 @@ func (s *Server) listRooms(c *Client) {
 		rooms = append(rooms, name)
 	}
 
-	c.msg(fmt.Sprintf("available rooms: %s", strings.Join(rooms, ", ")))
+	c.msg(fmt.Sprintf("available rooms: \n%s", strings.Join(rooms, ", \n")))
 }
 
 func (s *Server) msg(c *Client, args []string) {
@@ -97,4 +101,16 @@ func (s *Server) quitCurrentRoom(c *Client) {
 		delete(s.rooms[c.room.name].members, c.conn.RemoteAddr())
 		oldRoom.Broadcast(c, fmt.Sprintf("%s has left the room", c.nick))
 	}
+	c.room = nil
+}
+
+func (s *Server) readRoom(c *Client) {
+	if c.room == nil {
+		slog.Info("No room to read history")
+		c.msg("First join a room")
+		return
+	}
+
+	chatHistory := ReadChat(c.room.file)
+	c.msg(chatHistory)
 }

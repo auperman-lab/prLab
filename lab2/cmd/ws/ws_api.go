@@ -23,7 +23,7 @@ func (ws WsServer) Run() {
 
 	listener, err := net.Listen("tcp", ws.addr)
 	if err != nil {
-		log.Fatalf("unable to start websocket server: %s", err.Error())
+		log.Fatalf("unable to start socket server: %s", err.Error())
 	}
 
 	defer listener.Close()

@@ -29,17 +29,17 @@ type Image struct {
 }
 
 type ReturnProduct struct {
-	ID                  uint      `json:"id"`
-	Distributor         string    `json:"distributor"`
-	Name                string    `json:"name"`
-	Price               float32   `json:"price"`
-	PriceOld            float32   `json:"price_old"`
-	Discount            float32   `json:"discount"`
-	DiscountPeriodStart time.Time `json:"discount_period_start"`
-	DiscountPeriodEnd   time.Time `json:"discount_period_end"`
-	Available           *bool     `json:"available"`
-	Category            string    `json:"category"`
-	SubCategory         string    `json:"sub_category"`
-	Link                string    `json:"link"`
-	SpecialCondition    string    `json:"special_condition"`
+	ID                  uint       `json:"id"`
+	Distributor         string     `json:"distributor"`
+	Name                string     `json:"name"`
+	Price               float32    `json:"price"`
+	PriceOld            float32    `json:"price_old"`
+	Discount            float32    `json:"discount"`
+	DiscountPeriodStart *time.Time `json:"discount_period_start"`
+	DiscountPeriodEnd   *time.Time `json:"discount_period_end"`
+	Available           *bool      `json:"available"`
+	Category            string     `json:"category"`
+	SubCategory         string     `json:"sub_category"`
+	Link                string     `json:"link"`
+	SpecialCondition    string     `json:"special_condition"`
 }

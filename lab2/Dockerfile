@@ -10,5 +10,6 @@ RUN go mod download && \
     go build -o main
 
 EXPOSE 2003
+EXPOSE 2001
 
 CMD ["./main"]

@@ -63,8 +63,8 @@ func (repo *ProductRepository) GetProductByID(ctx context.Context, id uint) (*mo
 
 	var discountPeriod models.DiscountPeriod
 	if err := repo.db.WithContext(ctx).Where("id=?", product.DiscountPeriodID).First(&discountPeriod).Error; err == nil {
-		returnProduct.DiscountPeriodStart = discountPeriod.StartDate
-		returnProduct.DiscountPeriodEnd = discountPeriod.EndDate
+		returnProduct.DiscountPeriodStart = &discountPeriod.StartDate
+		returnProduct.DiscountPeriodEnd = &discountPeriod.EndDate
 	}
 
 	img, err := repo.GetImageByID(ctx, *product.ImageID)
@@ -110,8 +110,8 @@ func (repo *ProductRepository) GetProductByName(ctx context.Context, name string
 
 	var discountPeriod models.DiscountPeriod
 	if err := repo.db.WithContext(ctx).Where("id=?", product.DiscountPeriodID).First(&discountPeriod).Error; err == nil {
-		returnProduct.DiscountPeriodStart = discountPeriod.StartDate
-		returnProduct.DiscountPeriodEnd = discountPeriod.EndDate
+		returnProduct.DiscountPeriodStart = &discountPeriod.StartDate
+		returnProduct.DiscountPeriodEnd = &discountPeriod.EndDate
 	}
 
 	return returnProduct, nil

@@ -11,7 +11,8 @@ services:
       postgres-db:
         condition: service_healthy
     ports:
-      - "2003:2003"
+      - "2003:2003" #http
+      - "2001:2001" #tcp ws
     volumes:
       - app-static:/app/static
 
