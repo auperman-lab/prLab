@@ -1,20 +1,111 @@
 
 services:
-  app:
-    container_name: app
+  node1:
+    container_name: node1
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      NODE_ID: "node1"
+      PORT: "9001"
+      PEERS: "node2:9002,node3:9003,node4:9004,node5:9005"
     networks:
       - app-network
     depends_on:
       postgres-db:
         condition: service_healthy
     ports:
-      - "2003:2003" #http
-      - "2001:2001" #tcp ws
+      - "2003:2003" # HTTP
+      - "2001:2001" # TCP WS
+      - "9001:9001" # Node-specific
     volumes:
       - app-static:/app/static
+
+  node2:
+    container_name: node2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ID: "node2"
+      PORT: "9002"
+      PEERS: "node1:9001,node3:9003,node4:9004,node5:9005"
+    networks:
+      - app-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "2004:2003" # HTTP
+      - "2002:2001" # TCP WS
+      - "9002:9002" # Node-specific
+    volumes:
+      - app-static:/app/static
+
+  node3:
+    container_name: node3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ID: "node3"
+      PORT: "9003"
+      PEERS: "node1:9001,node2:9002,node4:9004,node5:9005"
+    networks:
+      - app-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "2005:2003" # HTTP
+      - "2006:2001" # TCP WS
+      - "9003:9003" # Node-specific
+    volumes:
+      - app-static:/app/static
+
+  node4:
+    container_name: node4
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ID: "node4"
+      PORT: "9004"
+      PEERS: "node1:9001,node2:9002,node3:9003,node5:9005"
+    networks:
+      - app-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "2007:2003" # HTTP
+      - "2008:2001" # TCP WS
+      - "9004:9004" # Node-specific
+    volumes:
+      - app-static:/app/static
+
+  node5:
+    container_name: node5
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ID: "node5"
+      PORT: "9005"
+      PEERS: "node1:9001,node2:9002,node3:9003,node4:9004"
+    networks:
+      - app-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "2009:2003" # HTTP
+      - "2010:2001" # TCP WS
+      - "9005:9005" # Node-specific
+    volumes:
+      - app-static:/app/static
+
+
 
   postgres-db:
     container_name: postgres-db
@@ -31,10 +122,13 @@ services:
       - postgres-db-data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d dbLinella -U market" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 3
       start_period: 30s
+
+
+
 
 
 networks:

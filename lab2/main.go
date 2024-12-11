@@ -5,20 +5,33 @@ import (
 	"github.com/auperman-lab/lab2/cmd/http"
 	"github.com/auperman-lab/lab2/internal/configs"
 	"github.com/auperman-lab/lab2/pkg/database"
+	"github.com/auperman-lab/lab2/raft"
 	"log/slog"
-	"sync"
+	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
 
-	wg := sync.WaitGroup{}
+	nodeID := os.Getenv("NODE_ID")
+	portStr := os.Getenv("PORT")
+	peersEnv := os.Getenv("PEERS")
+
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		fmt.Printf("Invalid port number: %s\n", portStr)
+		return
+	}
+	// Split peers from environment variable
+	peers := strings.Split(peersEnv, ",")
 
 	db := database.LoadDatabase()
 
-	server := http.NewAPIServer(fmt.Sprintf(":%s", configs.Env.Port), db)
-	wg.Add(1)
+	node := raft.NewNode(nodeID, port, peers)
+
+	server := http.NewAPIServer(fmt.Sprintf(":%s", configs.Env.Port), db, node)
 	go func(server *http.APIServer) {
-		defer wg.Done()
 		if err := server.Run(); err != nil {
 			slog.Error("API server encountered an error", "error", err)
 		}
@@ -32,5 +45,5 @@ func main() {
 	//	wsServer.Run()
 	//}(wsServer)
 
-	wg.Wait()
+	select {}
 }

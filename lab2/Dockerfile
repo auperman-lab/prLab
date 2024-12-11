@@ -4,6 +4,7 @@ WORKDIR /app
 COPY internal ./internal
 COPY pkg/ ./pkg/
 COPY cmd/ ./cmd/
+COPY raft/ ./raft/
 COPY .env go.mod go.sum main.go ./
 
 RUN go mod download && \
@@ -11,5 +12,7 @@ RUN go mod download && \
 
 EXPOSE 2003
 EXPOSE 2001
+EXPOSE 9001-9005
+
 
 CMD ["./main"]
