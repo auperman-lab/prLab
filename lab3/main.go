@@ -1,31 +1,33 @@
 package main
 
 import (
-	"github.com/auperman-lab/lab3/raft"
+	"github.com/auperman-lab/lab3/manager"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"log"
 )
 
 func main() {
-	peers1 := []string{"localhost:9002", "localhost:9003", "localhost:9004", "localhost:9005"}
-	peers2 := []string{"localhost:9001", "localhost:9003", "localhost:9004", "localhost:9005"}
-	peers3 := []string{"localhost:9001", "localhost:9002", "localhost:9004", "localhost:9005"}
-	peers4 := []string{"localhost:9001", "localhost:9002", "localhost:9003", "localhost:9005"}
-	peers5 := []string{"localhost:9001", "localhost:9002", "localhost:9003", "localhost:9004"}
+	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
+	if err != nil {
+		log.Panicf("Failed to connect to RabbitMQ: %s", err)
+	}
+	defer conn.Close()
 
-	//node1 := raft.NewNode("node1", 9001, peers1)
-	//node2 := raft.NewNode("node2", 9002, peers2)
-	//node3 := raft.NewNode("node3", 9003, peers3)
-	//node4 := raft.NewNode("node4", 9004, peers4)
-	//node5 := raft.NewNode("node5", 9005, peers5)
+	ch, err := conn.Channel()
+	defer ch.Close()
 
-	go raft.NewNode("node1", 9001, peers1)
-	go raft.NewNode("node2", 9002, peers2)
-	go raft.NewNode("node3", 9003, peers3)
-	go raft.NewNode("node4", 9004, peers4)
-	go raft.NewNode("node5", 9005, peers5)
+	url := "http://localhost:9001/products"
+	queName := "products"
+	consumer := manager.NewConsumer(url, ch, queName)
+	go consumer.Consume()
 
-	//nodes := []*raft.Node{node1, node2, node3, node4, node5}
-	//
-	//nodes = nodes[1:]
+	listener := manager.NewListener("8080", consumer)
+
+	err = listener.Start()
+	if err != nil {
+		panic(err)
+
+	}
 
 	select {}
 }

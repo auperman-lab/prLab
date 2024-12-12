@@ -14,6 +14,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      manager:
+        condition: service_started
     ports:
       - "2003:2003" # HTTP
       - "2001:2001" # TCP WS
@@ -35,6 +37,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      manager:
+        condition: service_started
     ports:
       - "2004:2003" # HTTP
       - "2002:2001" # TCP WS
@@ -56,6 +60,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      manager:
+        condition: service_started
     ports:
       - "2005:2003" # HTTP
       - "2006:2001" # TCP WS
@@ -77,6 +83,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      manager:
+        condition: service_started
     ports:
       - "2007:2003" # HTTP
       - "2008:2001" # TCP WS
@@ -98,6 +106,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      manager:
+        condition: service_started
     ports:
       - "2009:2003" # HTTP
       - "2010:2001" # TCP WS
@@ -105,7 +115,47 @@ services:
     volumes:
       - app-static:/app/static
 
+  manager:
+    container_name: manager
+    build:
+      context: ../lab3/.
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
 
+  ftp_server:
+    image: stilliard/pure-ftpd:hardened
+    container_name: ftp_server
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009" # Passive ports for FTP
+    environment:
+      FTP_USER_NAME: testuser
+      FTP_USER_PASS: testpass
+      FTP_USER_HOME: /home/testuser
+    volumes:
+      - ./ftp_data:/home/testuser
+
+
+
+  rabbitmq:
+    container_name: "rabbitmq"
+    image: rabbitmq:4-management-alpine
+    networks:
+      - app-network
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   postgres-db:
     container_name: postgres-db
@@ -139,4 +189,6 @@ volumes:
   app-static:
     driver: local
   postgres-db-data:
+    driver: local
+  ftp_data:
     driver: local

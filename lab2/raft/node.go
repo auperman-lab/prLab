@@ -34,11 +34,12 @@ const (
 
 func NewNode(ID string, port int, peers []string) *Node {
 	node := &Node{
-		ID:               ID,
-		peers:            peers,
-		state:            NewState(),
-		log:              NewLog(),
-		transport:        NewTransport(port),
+		ID:    ID,
+		peers: peers,
+		state: NewState(),
+		log:   NewLog(),
+		//transport:        NewTransport(port, "http://localhost:8080"),
+		transport:        NewTransport(port, "http://manager:8080"),
 		electionTimeout:  time.Duration(rand.Intn(150)+300) * time.Millisecond,
 		heartbeatTimeout: 150 * time.Millisecond,
 		votes:            0,
@@ -373,6 +374,8 @@ func (n *Node) convertToLeader() {
 		n.state.matchIndex[peer] = 0
 		n.state.nextIndex[peer] = n.log.LastIndex() + 1
 	}
+
+	n.transport.SendLeaderAddr(n.ID)
 
 	n.sendHeartbeats()
 }
