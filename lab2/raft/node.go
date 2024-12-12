@@ -383,7 +383,6 @@ func (n *Node) convertToLeader() {
 func (n *Node) GetLeader() bool {
 	n.mu.Lock()
 	defer n.mu.Unlock()
-	fmt.Printf("\033[31m[%s]Leader Value: %s\033[0m\n", n.ID, n.state.leader)
 
 	return n.state.leader == n.ID
 
@@ -398,8 +397,6 @@ func (n *Node) AppendLogs(data []byte) error {
 		Data:  data,
 	}
 	n.log.Append(logEntry)
-
-	fmt.Printf("\033[31m node is sending the entries \033[0m\n")
 
 	n.SendEntries([]LogEntry{logEntry})
 

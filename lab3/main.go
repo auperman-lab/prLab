@@ -21,7 +21,10 @@ func main() {
 	consumer := manager.NewConsumer(url, ch, queName)
 	go consumer.Consume()
 
-	listener := manager.NewListener("8080", consumer)
+	ftpClient := manager.NewFTPClient("ftp_server:21", "testuser", "testpass", "http://node1:9001")
+	go ftpClient.PollAndProcess()
+
+	listener := manager.NewListener("8080", consumer, ftpClient)
 
 	err = listener.Start()
 	if err != nil {

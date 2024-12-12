@@ -3,8 +3,10 @@ package middleware
 import (
 	"bytes"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io"
 	"net/http"
+	"regexp"
 )
 
 func LeaderCheckerMiddleware(isLeaderFunc func() bool) func(http.Handler) http.Handler {
@@ -33,7 +35,15 @@ func RaftReplicationMiddleware(sendLogToRaft func(logEntry []byte) error) func(h
 			}
 			r.Body.Close()
 
-			if err := sendLogToRaft(body); err != nil {
+			data := make([]byte, 0)
+
+			if matched, _ := regexp.MatchString(`/products/\d+/upload`, r.URL.Path); matched {
+				data = replicateImage(r)
+			} else {
+				data = body
+			}
+
+			if err := sendLogToRaft(data); err != nil {
 				http.Error(w, "Failed to replicate log entry", http.StatusInternalServerError)
 				return
 			}
@@ -44,4 +54,17 @@ func RaftReplicationMiddleware(sendLogToRaft func(logEntry []byte) error) func(h
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func replicateImage(r *http.Request) []byte {
+	var imageName string
+	if r.MultipartForm != nil {
+		imageName = r.FormValue("image")
+	} else {
+		vars := mux.Vars(r)
+		id := vars["id"]
+		imageName = fmt.Sprintf("%s_image", id)
+	}
+
+	return []byte(imageName)
 }

@@ -8,15 +8,16 @@ import (
 )
 
 type Listener struct {
-	server   *http.Server
-	consumer *Consumer
+	server    *http.Server
+	consumer  *Consumer
+	ftpClient *FTPClient
 }
 
 type ChangeLeaderRequest struct {
 	NewLeaderURL string `json:"new_leader_url"`
 }
 
-func NewListener(port string, consumer *Consumer) *Listener {
+func NewListener(port string, consumer *Consumer, ftpClient *FTPClient) *Listener {
 	l := &Listener{}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/changeLeader", l.changeLeaderHandler)
@@ -25,6 +26,7 @@ func NewListener(port string, consumer *Consumer) *Listener {
 		Handler: mux,
 	}
 	l.consumer = consumer
+	l.ftpClient = ftpClient
 
 	return l
 }
@@ -54,6 +56,7 @@ func (l *Listener) changeLeaderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	(*l.consumer).UpdateURL(req.NewLeaderURL)
+	(*l.ftpClient).UpdateURL(req.NewLeaderURL)
 
 	w.WriteHeader(http.StatusOK)
 	fmt.Printf("Leader URL updated successfully : %s\n", req.NewLeaderURL)

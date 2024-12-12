@@ -131,6 +131,8 @@ services:
   ftp_server:
     image: stilliard/pure-ftpd:hardened
     container_name: ftp_server
+    networks:
+      - app-network
     ports:
       - "21:21"
       - "30000-30009:30000-30009" # Passive ports for FTP
