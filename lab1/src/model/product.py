@@ -2,11 +2,11 @@ from lab1.src.value_converter import convert_price
 
 
 class Product:
-    def __init__(self, name, price_now, price_old, discount, link, category, sub_category):
+    def __init__(self, name, price_now, price_old, discount: str, link, category, sub_category):
         self.name = name
         self.price_now = price_now
         self.price_old = price_old
-        self.discount = discount
+        self.discount:str = discount
         self.link = link
         self.category = category
         self.sub_category = sub_category
@@ -23,6 +23,28 @@ class Product:
             f"Sub-Category: {self.sub_category}\n"
             f"EUR Price: {self.price_eur} EUR\n"
         )
+
+    def to_dict(self):
+        return {
+            "distributor_id": 1,
+            "name": self.name,
+            "price": self.price_now,
+            "price_old": self.price_old,
+            "discount": self.transform_discount(),
+            "discount_period_id": None,
+            "available": True,
+            "link": self.link,
+            "sub_category": self.sub_category,
+            "image_id": None,
+            "special_conditions": None,
+        }
+
+    def transform_discount(self)->float:
+
+        if self.discount.endswith('%'):
+            self.discount = self.discount[1:-1]
+            return float(self.discount)
+        return 0.0
 
     def validate(self):
         # Validate name

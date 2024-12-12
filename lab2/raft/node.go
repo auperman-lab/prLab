@@ -337,7 +337,7 @@ func (n *Node) handleMessage(msg *Message, addr *net.UDPAddr) {
 			followerAddr := addr.String()
 			n.state.nextIndex[followerAddr] = max(n.state.nextIndex[followerAddr]-1, 1)
 			fmt.Printf("[%s] Log inconsistency with %s, retrying...\n", n.ID, followerAddr)
-			n.retryAppendEntries(followerAddr)
+			go n.retryAppendEntries(followerAddr)
 			return
 		}
 

@@ -363,3 +363,12 @@ var SubCategorySeedData = []SubCategory{
 	// Subcategories for "Sport"
 	{ID: 232, Name: "Sport", CategoryID: 37},
 }
+
+func FindSubCategory(subCategoryName string) (SubCategory, bool) {
+	for _, subCategory := range SubCategorySeedData {
+		if subCategory.Name == subCategoryName {
+			return subCategory, true
+		}
+	}
+	return SubCategory{}, false
+}

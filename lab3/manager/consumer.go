@@ -76,7 +76,7 @@ func deserializeProduct(data []byte) (Product, error) {
 		log.Printf("Error unmarshalling message: %s", err)
 		return Product{}, err
 	}
-	if product.ID == 0 || product.Name == "" || product.Price <= 0 {
+	if product.Name == "" || product.Price <= 0 {
 		log.Printf("Invalid product data: %+v", product)
 		return Product{}, errors.New("invalid product data")
 	}
@@ -108,5 +108,5 @@ func sendRequest(product Product, backendURL string) {
 }
 
 func (c *Consumer) UpdateURL(newURL string) {
-	c.url = newURL
+	c.url = newURL + "/products"
 }

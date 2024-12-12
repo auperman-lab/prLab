@@ -39,12 +39,33 @@ func NewProductController(service IProductService) *ProductController {
 }
 
 func (ctrl *ProductController) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var product models.Product
-	if err := utils.ParseJSON(r, &product); err != nil {
+	var createProduct models.CreateProduct
+	if err := utils.ParseJSON(r, &createProduct); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
+
 	defer r.Body.Close()
+
+	subCategoryID, exists := models.FindSubCategory(createProduct.SubCategory)
+	if !exists {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid subcategory: %s", createProduct.SubCategory))
+		return
+	}
+
+	product := models.Product{
+		DistributorID:    createProduct.DistributorID,
+		Name:             createProduct.Name,
+		Price:            createProduct.Price,
+		PriceOld:         createProduct.PriceOld,
+		Discount:         createProduct.Discount,
+		DiscountPeriodID: createProduct.DiscountPeriodID,
+		Available:        createProduct.Available,
+		Link:             createProduct.Link,
+		SubCategoryID:    subCategoryID.ID,
+		SpecialCondition: createProduct.SpecialCondition,
+		ImageID:          createProduct.ImageID,
+	}
 
 	ctx := r.Context()
 

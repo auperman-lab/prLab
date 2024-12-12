@@ -8,7 +8,8 @@ services:
     environment:
       NODE_ID: "node1"
       PORT: "9001"
-      PEERS: "node2:9002,node3:9003,node4:9004,node5:9005"
+      PEERS: "node2:9002,node3:9003"
+#      PEERS: "node2:9002,node3:9003,node4:9004,node5:9005"
     networks:
       - app-network
     depends_on:
@@ -31,7 +32,8 @@ services:
     environment:
       NODE_ID: "node2"
       PORT: "9002"
-      PEERS: "node1:9001,node3:9003,node4:9004,node5:9005"
+      PEERS: "node2:9002,node3:9003"
+      #      PEERS: "node2:9002,node3:9003,node4:9004,node5:9005"
     networks:
       - app-network
     depends_on:
@@ -54,7 +56,8 @@ services:
     environment:
       NODE_ID: "node3"
       PORT: "9003"
-      PEERS: "node1:9001,node2:9002,node4:9004,node5:9005"
+      PEERS: "node2:9002,node3:9003"
+      #      PEERS: "node2:9002,node3:9003,node4:9004,node5:9005"
     networks:
       - app-network
     depends_on:
@@ -69,51 +72,51 @@ services:
     volumes:
       - app-static:/app/static
 
-  node4:
-    container_name: node4
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      NODE_ID: "node4"
-      PORT: "9004"
-      PEERS: "node1:9001,node2:9002,node3:9003,node5:9005"
-    networks:
-      - app-network
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      manager:
-        condition: service_started
-    ports:
-      - "2007:2003" # HTTP
-      - "2008:2001" # TCP WS
-      - "9004:9004" # Node-specific
-    volumes:
-      - app-static:/app/static
-
-  node5:
-    container_name: node5
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      NODE_ID: "node5"
-      PORT: "9005"
-      PEERS: "node1:9001,node2:9002,node3:9003,node4:9004"
-    networks:
-      - app-network
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      manager:
-        condition: service_started
-    ports:
-      - "2009:2003" # HTTP
-      - "2010:2001" # TCP WS
-      - "9005:9005" # Node-specific
-    volumes:
-      - app-static:/app/static
+#  node4:
+#    container_name: node4
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    environment:
+#      NODE_ID: "node4"
+#      PORT: "9004"
+#      PEERS: "node1:9001,node2:9002,node3:9003,node5:9005"
+#    networks:
+#      - app-network
+#    depends_on:
+#      postgres-db:
+#        condition: service_healthy
+#      manager:
+#        condition: service_started
+#    ports:
+#      - "2007:2003" # HTTP
+#      - "2008:2001" # TCP WS
+#      - "9004:9004" # Node-specific
+#    volumes:
+#      - app-static:/app/static
+#
+#  node5:
+#    container_name: node5
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    environment:
+#      NODE_ID: "node5"
+#      PORT: "9005"
+#      PEERS: "node1:9001,node2:9002,node3:9003,node4:9004"
+#    networks:
+#      - app-network
+#    depends_on:
+#      postgres-db:
+#        condition: service_healthy
+#      manager:
+#        condition: service_started
+#    ports:
+#      - "2009:2003" # HTTP
+#      - "2010:2001" # TCP WS
+#      - "9005:9005" # Node-specific
+#    volumes:
+#      - app-static:/app/static
 
   manager:
     container_name: manager
