@@ -1,5 +1,6 @@
-from lab1.src.consts import base_url
-from lab1.src.parser import parse_all_categories, parse_products
+from lab1.src.consts import linella_base_url, kaufland_base_url, kaufland_offers_url
+from lab1.src.linella.kaufland_parser import parse_products
+# from lab1.src.linella.linella_parser import parse_products
 from lab1.src.scraper import http_scraper
 import json
 import pika
@@ -27,15 +28,17 @@ def send_products_to_queue(products, queue_name='products'):
 
 
 def main():
-    milk_path = "/ro/catalog/produse_lactate?page=1"
-    milk_url = "https://" + base_url + milk_path
+    # milk_path = "/ro/catalog/produse_lactate?page=1"
+    # milk_url = "https://" + linella_base_url + milk_path
     # categories_path = "/ro/catalog"
     # categories_url = "https://"+base_url+ categories_path
-    #
-    html = http_scraper(milk_url)
+
+    url = "https://" + kaufland_base_url + kaufland_offers_url
+
+    html = http_scraper(url)
 
     products = parse_products(html)
-    send_products_to_queue(products)
+
 
 
 

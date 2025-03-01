@@ -4,7 +4,7 @@ import ssl
 import requests
 import socket
 
-from lab1.src.consts import base_ip, base_port, base_url
+from lab1.src.consts import linella_base_ip, linella_base_port, linella_base_url
 
 
 def http_scraper(url):
@@ -19,12 +19,12 @@ def http_scraper(url):
 
 
 def tcp_scraper(path):
-    with socket.create_connection((base_ip, base_port)) as sock:
+    with socket.create_connection((linella_base_ip, linella_base_port)) as sock:
         context = ssl.create_default_context()
-        with context.wrap_socket(sock, server_hostname=base_url) as s:
+        with context.wrap_socket(sock, server_hostname=linella_base_url) as s:
             https_request = (
                 f"GET {path} HTTP/1.1\r\n"
-                f"Host: {base_url}\r\n"
+                f"Host: {linella_base_url}\r\n"
                 "User-Agent: Python TCP Scraper\r\n"
                 "Accept: text/html\r\n"
                 "Connection: close\r\n\r\n"
@@ -50,13 +50,13 @@ def tcp_scraper(path):
 def send_custom_post_request(path, data, username, password):
     with socket.create_connection(("127.0.0.1", 8080)) as sock:
         context = ssl.create_default_context()
-        with context.wrap_socket(sock, server_hostname=base_url) as s:
+        with context.wrap_socket(sock, server_hostname=linella_base_url) as s:
             json_data = json.dumps(data)
 
             # Construct the POST request
             https_request = (
                 f"POST {path} HTTP/1.1\r\n"
-                f"Host: {base_url}\r\n"
+                f"Host: {linella_base_url}\r\n"
                 "User-Agent: Python TCP Scraper\r\n"
                 "Accept: application/json\r\n"
                 "Content-Type: application/json\r\n"
